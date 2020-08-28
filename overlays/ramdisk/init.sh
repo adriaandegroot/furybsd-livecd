@@ -11,7 +11,7 @@ echo "==> Remount rootfs as read-write"
 mount -u -w /
 
 echo "==> Make mountpoints"
-mkdir -p /cdrom /memdisk /sysroot /tmp
+mkdir -p /cdrom /memdisk /sysroot
 
 echo "Waiting for FURYBSD media to initialize"
 while : ; do
@@ -23,9 +23,6 @@ echo "==> Mount cdrom"
 mount_cd9660 /dev/iso9660/FURYBSD /cdrom
 mdconfig -f /cdrom/data/system.uzip -u 1
 zpool import furybsd -o readonly=on
-
-# Make room for backup in /tmp
-mount -t tmpfs tmpfs /tmp
 
 if [ "$SINGLE_USER" = "true" ]; then
         echo "Starting interactive shell in temporary rootfs ..."
@@ -46,7 +43,7 @@ fi
 echo "==> Mount swap-based memdisk"
 mdconfig -a -t swap -s 4g
 zpool create livecd /dev/md2
-zfs set compression=gzip livecd
+zfs set compression=zstd-6 livecd
 zfs send furybsd | chroot /usr/local/furybsd/uzip pv | zfs recv -F livecd
 
 mount -t devfs devfs /livecd/dev

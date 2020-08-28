@@ -1,6 +1,6 @@
 #!/bin/sh
 
-version="12.1"
+version="13.0"
 pkgset="branches/2020Q1"
 desktop=$1
 tag=$2
@@ -20,9 +20,9 @@ vol="furybsd"
 label="FURYBSD"
 isopath="${iso}/${vol}.iso"
 export DISTRIBUTIONS="kernel.txz base.txz"
-export BSDINSTALL_DISTSITE="http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/12.1-RELEASE/"
+export BSDINSTALL_DISTSITE="http://ftp.freebsd.org/pub/FreeBSD/snapshots/amd64/13.0-CURRENT/"
 export BSDINSTALL_CHROOT="/usr/local/furybsd/uzip"
-export BSDINSTALL_DISTDIR="/usr/local/furybsd/cache/12.1/base"
+export BSDINSTALL_DISTDIR="/usr/local/furybsd/cache/13.0/base"
 
 # Only run as superuser
 if [ "$(id -u)" != "0" ]; then
@@ -95,7 +95,7 @@ workspace()
   mdconfig -f ${livecd}/pool.img -u 0
   zpool create furybsd /dev/md0
   zfs set mountpoint=${uzip} furybsd
-  zfs set compression=gzip-6 furybsd
+  zfs set compression=zstd-6 furybsd
 }
 
 base()
@@ -258,10 +258,7 @@ ramdisk()
 boot() 
 {
   cp -R ${cwd}/overlays/boot/ ${cdroot}
-  cd "${uzip}" && tar -cf - --exclude boot/kernel boot | tar -xf - -C "${cdroot}"
-  for kfile in kernel geom_uzip.ko nullfs.ko tmpfs.ko opensolaris.ko unionfs.ko xz.ko zfs.ko; do
-  tar -cf - boot/kernel/${kfile} | tar -xf - -C "${cdroot}"
-  done
+  tar -cf - boot | tar -xf - -C "${cdroot}"
 }
 
 image() 
